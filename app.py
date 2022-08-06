@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 app = Flask(__name__)
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost:5432/todoapp'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://mmlvotvldfsess:6dc99dcb5f5ef404d5e9fbd15d31b515906008f2fe3abdb8ca6e94793a4ec0e0@ec2-34-235-31-124.compute-1.amazonaws.com:5432/ddru3rd8809buu'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -40,8 +40,7 @@ def create_task():
         db.session.add(todo)
         db.session.commit()
         body['description'] = todo.description
-        body['due-date']=todo.dueDate
-
+        body['due-date'] = todo.dueDate
 
     except:
         error = True
@@ -51,9 +50,9 @@ def create_task():
     finally:
         db.session.close()
     if error:
-        abort (400)
+        abort(400)
     else:
-        return jsonify(body)    
+        return jsonify(body)
 
     # finally:
     #     db.session.close()
