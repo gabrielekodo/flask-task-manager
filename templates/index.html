@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To do App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container mt-5 w-75">
+        <h1>Task Manager</h1>
+<div class="alert-danger d-none alert"></div>
+
+        <div class="container">
+            <form class="g-3 row mb-4">
+<div class="col-md-12">
+    <label for="task" class="form-label">Task</label>
+    <input type="text" name="description" id="task" placeholder="enter new task" class="form-control">
+</div>
+<div class="col-md-12">
+    <label for="date" class="form-label">Due Date</label>
+    <input type="date" name="due-date" id="date" placeholder="enter due date" class="form-control">
+</div>
+
+<div class="col-12">
+    <input type="submit" class="btn btn-block btn-primary" value="Add Task">
+</div>
+            </form>
+        </div>
+    <ul class="list-group">
+        {% for d in data %}
+        <li class="list-group-item mb-3">
+            <input class="form-check-input px-2 check-completed" data-id="{{d.id}}" type="checkbox" {% if d.completed %} checked {% endif %}/>
+            {{d.description}}
+            <p class="lead mx-3">{{d.dueDate}}</p>
+        <button class="btn btn-danger float-end del-btn" data-id="{{d.id}}"><i class="fa fa-trash" aria-hidden="true"></i></button>
+        </li>
+        {% endfor %}
+    </ul>
+    </div>
+
+    <!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+<script>
+
+//updating task
+const checkBoxes=document.querySelectorAll('.check-completed')
+
+checkBoxes.forEach(checkBox => {
+    checkBox.addEventListener('change',(e)=>{
+        console.log('event',e.target);
+const newCompleted=e.target.checked
+const taskId=e.target.dataset.id
+console.log(taskId);
+fetch('http://localhost:5000/tasks/'+taskId+'/set-completed',{
+    method:'POST',
+    headers:{
+        'Content-Type':'application/json'
+    },
+    body:JSON.stringify({'completed':newCompleted}),
+}).then(Response=>{
+    return Response.json()
+}).then(response=>{
+    console.log(response);
+    
+}).catch(err=>{
+    console.log('error ',err);
+    document.querySelector('.alert').classList.remove('d-none')
+    document.querySelector('.alert').textContent='Something went wrong'
+})
+
+    })
+    
+});
+
+//delete task
+const delBtns=document.querySelectorAll('.del-btn')
+delBtns.forEach(delBtn =>{
+delBtn.addEventListener('click',(e)=>{
+    console.log(e.target.parentElement);
+    if(e.target.parentElement.classList.contains('del-btn')){
+        console.log(e.target.parentElement.parentElement);
+        let id=e.target.parentElement.dataset.id
+        console.log(id);
+        e.target.parentElement.parentElement.classList.add('d-none')
+        fetch('http://localhost:5000/tasks/'+id+'/delete').then(Response=>{
+    return Response.json()
+}).then(response=>{
+    e.target.parentElement.parentElement.classList.add('d-none')
+    console.log(response);
+}).catch(err=>{
+    console.log(err);
+    document.querySelector('.alert').classList.remove('d-none')
+    
+    document.querySelector('.alert').textContent='Something went wrong'
+})
+
+    }
+})
+
+})
+
+
+
+// Creating new task
+    document.querySelector('form').addEventListener('submit',(e)=>{
+        e.preventDefault()
+if(document.getElementById('task').value=='' ){
+    document.querySelector('.alert').classList.remove('d-none')
+    document.querySelector('.alert').textContent='Can not submit empty task!'
+    return
+}
+
+ fetch('http://localhost:5000/tasks/create',{
+    method:'POST',
+    headers:{
+        'Content-Type':'application/json'
+    },
+    body:JSON.stringify({'description':document.getElementById('task').value,
+'due-date': document.getElementById('date').value})
+
+}).then(Response=>{
+    return Response.json()
+}).then(res=>{
+    console.log(res);
+    let li=document.createElement('li')
+    li.classList.add('list-group-item')
+    li.innerText=res['description']
+    document.querySelector('.list-group').appendChild(li)
+
+    document.getElementById('task').value=''
+}).catch(err=>{
+    console.log(err);
+    document.querySelector('.alert').classList.remove('d-none')
+    document.querySelector('.alert').textContent='Something went wrong'
+
+})
+
+    })
+</script>
+</body>
+</html>
